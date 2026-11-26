@@ -84,7 +84,8 @@ declare
 begin
   for b in 1..p_qtd_blocos loop
     insert into public.blocos (nome, ordem)
-    values (lpad(b::text, p_digitos_bloco, '0'), b)
+    -- greatest(): lpad corta textos maiores ("100" com 2 dígitos viraria "10")
+    values (lpad(b::text, greatest(p_digitos_bloco, length(b::text)), '0'), b)
     on conflict (nome) do update set ordem = excluded.ordem
     returning id into v_bloco;
     for a in 1..p_andares loop
@@ -92,7 +93,7 @@ begin
         insert into public.unidades (bloco_id, numero, andar)
         values (v_bloco, (a * 100 + p)::text, a)
         on conflict (bloco_id, numero) do nothing;
-        total := total + 1;
+        if found then total := total + 1; end if;
       end loop;
     end loop;
   end loop;
