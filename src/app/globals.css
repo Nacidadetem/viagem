@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+/* Paleta: verde-mata (comunidade) + laranja-sol (destaque). Contraste AA ou melhor. */
+@theme {
+  --color-marca-50: #eefaf3;
+  --color-marca-100: #d5f2e1;
+  --color-marca-200: #aee4c6;
+  --color-marca-500: #1f9d5c;
+  --color-marca-600: #137f49;
+  --color-marca-700: #0f663b;
+  --color-marca-800: #0d5131;
+  --color-marca-900: #0b3f27;
+  --color-sol-100: #fff1dc;
+  --color-sol-500: #f08a1c;
+  --color-sol-700: #a8540a;
+  --color-tinta: #17221c;
+  --color-suave: #4a5a51;
+  --color-fundo: #f6f8f6;
+  --color-linha: #d8e0db;
+  --color-perigo: #b42318;
+  --color-perigo-50: #fef3f2;
+  --font-sans: "Atkinson Hyperlegible", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+html {
+  /* 18px de base: leitura confortável inclusive para idosos */
+  font-size: 112.5%;
+  -webkit-text-size-adjust: 100%;
+}
+html.fonte-grande {
+  font-size: 131.25%; /* 21px */
+}
+
+body {
+  background: var(--color-fundo);
+  color: var(--color-tinta);
+  font-family: var(--font-sans);
+  line-height: 1.55;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-sol-500);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* respeita a área segura do iPhone quando instalado */
+.pb-seguro { padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem); }
+.pt-seguro { padding-top: env(safe-area-inset-top); }
