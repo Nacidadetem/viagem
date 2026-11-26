@@ -1,6 +1,10 @@
 \set ON_ERROR_STOP 1
 -- Cenário: síndico, morador pendente, morador mal informado
 select public.gerar_unidades(3, 4, 4, 2) as unidades_criadas;
+-- blocos com mais dígitos que o padrão não podem colidir (bug do lpad)
+select public.gerar_unidades(154, 4, 4, 2) = 2464 - 48 as gerou_o_resto;
+select (select count(*) from unidades) = 2464 as total_2464,
+       exists (select 1 from blocos where nome = '154') as bloco_154_existe;
 
 insert into auth.users (id, email, raw_user_meta_data) values
  ('00000000-0000-0000-0000-000000000001', 'sindico@x.com',
@@ -8,7 +12,7 @@ insert into auth.users (id, email, raw_user_meta_data) values
  ('00000000-0000-0000-0000-000000000002', 'maria@x.com',
   '{"nome":"Maria","bloco":"Bloco 2","apartamento":"203","aceite_termos":true,"aceite_notificacoes":true}'),
  ('00000000-0000-0000-0000-000000000003', 'joao@x.com',
-  '{"nome":"João","bloco":"99","apartamento":"101","aceite_termos":true,"tipo_vinculo":"dependente"}');
+  '{"nome":"João","bloco":"999","apartamento":"101","aceite_termos":true,"tipo_vinculo":"dependente"}');
 insert into auth.users (id, phone) values ('00000000-0000-0000-0000-000000000004', '+5581999990000');
 
 -- usuário 4 (SMS sem cadastro) não ganha perfil; usuário 2 foi casado com a unidade 02/203
@@ -46,7 +50,7 @@ select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001
 select count(*) = 2 as fila_tem_2 from public.fila_aprovacao();
 select public.aprovar_cadastro('00000000-0000-0000-0000-000000000002',
         (select unidade_id from public.fila_aprovacao() where email='maria@x.com'));
-select public.rejeitar_cadastro('00000000-0000-0000-0000-000000000003', 'Bloco 99 não existe. Confira e cadastre de novo.');
+select public.rejeitar_cadastro('00000000-0000-0000-0000-000000000003', 'Bloco 999 não existe. Confira e cadastre de novo.');
 select public.definir_papeis('00000000-0000-0000-0000-000000000002', array['morador','prestador']::papel_usuario[]);
 select public.resumo_cadastros();
 do $$ begin
