@@ -35,6 +35,11 @@ npm run e2e       # fluxo completo no navegador (precisa de supabase start + npm
 
 ## Colocar em produção
 
+Passo a passo pelo painel, sem chaves no chat: [`docs/PUBLICAR.md`](docs/PUBLICAR.md).
+Site: https://condominioignezandreazza.vercel.app (deploy automático a cada atualização do `master`).
+
+Ou, pela linha de comando:
+
 1. Crie o projeto no Supabase (região São Paulo) e rode `npx supabase link` + `npx supabase db push`.
 2. **Ajuste a numeração real** dos blocos/apartamentos em `supabase/seed.sql` (hoje é provisória) e rode no SQL Editor.
 3. Auth > Providers: ative **Phone** com um provedor de SMS (Twilio, Zenvia via Twilio Verify etc.)
