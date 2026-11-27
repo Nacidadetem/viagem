@@ -7,8 +7,10 @@ Cada etapa entrega a sua migração em `supabase/migrations/`.
 
 | Tabela | Para quê | Observações |
 |---|---|---|
-| `blocos` | Blocos do condomínio | `mapa_x/mapa_y` posicionam o bloco no mapa (usado nos chamados) |
-| `unidades` | Os 2.464 apartamentos | únicos por bloco + número; gerados por `gerar_unidades()` |
+| `blocos` | Os 23 blocos | nomes canônicos, sem zeros à esquerda |
+| `predios` | Os 176 prédios | pertencem a um bloco; `mapa_x/mapa_y` posicionam o prédio no mapa (chamados) |
+| `unidades` | Os 2.464 apartamentos | únicos por prédio + número; importados da lista oficial ou criados na aprovação |
+| `configuracoes` | Totais e estado da lista oficial | `estrutura`, `lista_oficial_importada` |
 | `perfis` | 1 por login (`auth.users`) | dados mínimos; `status`: pendente → aprovado / rejeitado / suspenso |
 | `papeis_usuario` | Papéis (N por pessoa) | morador, prestador, zelador, manutenção, portaria, administração, síndico |
 | `consentimentos` | Histórico de aceites LGPD | termos, privacidade, notificações, ofertas de parceiros |

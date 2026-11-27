@@ -24,7 +24,7 @@ export default async function CompletarCadastro() {
       ) : null}
       <FormCadastro
         modo="completar"
-        inicial={p ? { nome: p.nome, bloco: p.bloco_informado, apartamento: p.apto_informado, tipo: p.tipo_vinculo } : undefined}
+        inicial={p ? { nome: p.nome, bloco: p.bloco_informado, predio: p.predio_informado ?? "", apartamento: p.apto_informado, tipo: p.tipo_vinculo } : undefined}
       />
       <BotaoSair />
     </LayoutPublico>

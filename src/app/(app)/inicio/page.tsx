@@ -31,7 +31,7 @@ export default async function Inicio() {
       {s.ehAdmin && pendentes > 0 ? (
         <Link href="/admin/aprovacoes" className="block">
           <Aviso tipo="atencao" titulo={`${pendentes} cadastro${pendentes > 1 ? "s" : ""} aguardando aprovação`}>
-            Toque aqui para conferir bloco e apartamento.
+            Toque aqui para conferir bloco, prédio e apartamento.
           </Aviso>
         </Link>
       ) : null}

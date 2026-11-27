@@ -4,7 +4,7 @@ import { BotaoLink, Cartao, Selo } from "@/components/ui";
 import { obterSessao } from "@/lib/sessao";
 import { criarClienteServidor } from "@/lib/supabase/server";
 import { NOME_PAPEL } from "@/lib/tipos";
-import { exibirTelefone } from "@/lib/formatar";
+import { endereco, exibirTelefone } from "@/lib/formatar";
 import { Preferencias, ZonaLgpd, EditarNome } from "./componentes";
 
 export const metadata: Metadata = { title: "Meu perfil" };
@@ -27,8 +27,8 @@ export default async function Perfil() {
       <Cartao className="flex flex-col gap-4">
         <EditarNome nome={p.nome} />
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-base">
-          <dt className="text-suave">Bloco / apto</dt>
-          <dd>{s.unidade ? `${s.unidade.bloco} / ${s.unidade.apartamento}` : "—"}</dd>
+          <dt className="text-suave">Endereço</dt>
+          <dd>{s.unidade ? endereco(s.unidade.bloco, s.unidade.predio, s.unidade.apartamento) : "A definir pela administração"}</dd>
           <dt className="text-suave">Vínculo</dt>
           <dd>{p.tipo_vinculo === "titular" ? "Titular" : "Dependente"}</dd>
           {p.telefone ? (<><dt className="text-suave">Celular</dt><dd>{exibirTelefone(p.telefone)}</dd></>) : null}

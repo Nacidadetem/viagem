@@ -5,7 +5,11 @@ import { criarClienteServidor } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Administração" };
 
-interface Resumo { pendentes: number; aprovados: number; rejeitados: number; suspensos: number; unidades_com_morador: number; total_unidades: number }
+interface Resumo {
+  pendentes: number; aprovados: number; rejeitados: number; suspensos: number;
+  unidades_com_morador: number; total_unidades: number; total_blocos: number; total_predios: number;
+  lista_oficial_importada: boolean;
+}
 
 export default async function Admin() {
   const supabase = await criarClienteServidor();
@@ -16,13 +20,16 @@ export default async function Admin() {
   const numeros = [
     { rotulo: "Aguardando aprovação", valor: r.pendentes ?? 0, destaque: (r.pendentes ?? 0) > 0 },
     { rotulo: "Moradores aprovados", valor: r.aprovados ?? 0 },
-    { rotulo: "Apartamentos no app", valor: `${r.unidades_com_morador ?? 0} de ${r.total_unidades ?? 0}`, extra: `${cobertura}%` },
+    { rotulo: "Apartamentos no app", valor: `${r.unidades_com_morador ?? 0} de ${(r.total_unidades ?? 0).toLocaleString("pt-BR")}`, extra: `${cobertura}%` },
     { rotulo: "Suspensos", valor: r.suspensos ?? 0 },
   ];
 
   return (
     <div className="flex flex-col gap-5">
       <h1 className="text-2xl font-bold text-marca-900">Administração</h1>
+      <p className="text-base text-suave">
+        {r.total_blocos ?? 23} blocos · {r.total_predios ?? 176} prédios · {(r.total_unidades ?? 2464).toLocaleString("pt-BR")} apartamentos
+      </p>
       <ul className="grid grid-cols-2 gap-3">
         {numeros.map((n) => (
           <li key={n.rotulo} className={`rounded-2xl border p-4 ${n.destaque ? "border-sol-500 bg-sol-100" : "border-linha bg-white"}`}>
@@ -34,8 +41,13 @@ export default async function Admin() {
       </ul>
       <nav aria-label="Seções da administração" className="flex flex-col gap-3">
         {[
-          { href: "/admin/aprovacoes", t: "Aprovar cadastros", d: "Conferir bloco e apartamento de quem se cadastrou", i: "✅" },
+          { href: "/admin/aprovacoes", t: "Aprovar cadastros", d: "Conferir bloco, prédio e apartamento de quem se cadastrou", i: "✅" },
           { href: "/admin/usuarios", t: "Usuários e permissões", d: "Definir síndico, zelador, portaria, prestador…", i: "👥" },
+          {
+            href: "/admin/estrutura", t: "Estrutura do condomínio",
+            d: r.lista_oficial_importada ? "Lista oficial de apartamentos importada" : "Importar a lista oficial de apartamentos",
+            i: "🏢",
+          },
         ].map((l) => (
           <Link key={l.href} href={l.href}>
             <Cartao className="flex items-center gap-4 hover:border-marca-500">

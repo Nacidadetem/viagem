@@ -8,12 +8,12 @@ import type { Papel } from "@/lib/tipos";
 // e a lista se atualiza na próxima visita (páginas são dinâmicas).
 type Resultado = { ok: true } | { erro: string };
 
-export async function aprovar(usuarioId: string, bloco: string, apto: string): Promise<Resultado> {
+export async function aprovar(usuarioId: string, bloco: string, predio: string, apto: string): Promise<Resultado> {
   await exigirAdmin();
   const supabase = await criarClienteServidor();
-  const { data: unidadeId } = await supabase.rpc("buscar_unidade", { p_bloco: bloco, p_numero: apto });
-  if (!unidadeId) return { erro: `Não existe o apartamento ${apto} no bloco ${bloco}. Corrija antes de aprovar.` };
-  const { error } = await supabase.rpc("aprovar_cadastro", { p_usuario: usuarioId, p_unidade: unidadeId });
+  const { error } = await supabase.rpc("aprovar_cadastro", {
+    p_usuario: usuarioId, p_bloco: bloco, p_predio: predio, p_apto: apto,
+  });
   return error ? { erro: error.message } : { ok: true };
 }
 
@@ -46,4 +46,36 @@ export async function reativar(usuarioId: string): Promise<Resultado> {
   const { error } = await supabase.rpc("reativar_usuario", { p_usuario: usuarioId });
   revalidatePath("/admin/usuarios");
   return error ? { erro: error.message } : { ok: true };
+}
+
+export async function definirEndereco(usuarioId: string, bloco: string, predio: string, apto: string): Promise<Resultado> {
+  await exigirAdmin();
+  const supabase = await criarClienteServidor();
+  const { error } = await supabase.rpc("definir_endereco", {
+    p_usuario: usuarioId, p_bloco: bloco, p_predio: predio, p_apto: apto,
+  });
+  revalidatePath("/admin/usuarios");
+  return error ? { erro: error.message } : { ok: true };
+}
+
+export interface ResultadoImportacao {
+  apartamentos_novos: number; linhas_ignoradas: number; cadastros_vinculados: number;
+  blocos: number; predios: number; apartamentos: number;
+}
+
+/** Importa a lista oficial: cada linha "bloco;prédio;apto" (aceita ; , ou tab). */
+export async function importarLista(texto: string): Promise<{ ok: ResultadoImportacao } | { erro: string }> {
+  await exigirAdmin();
+  const linhas = texto
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((l) => l.split(/[;,\t]/).map((c) => c.trim().replace(/^"|"$/g, "")))
+    .filter((c) => c.length >= 3 && !/^bloco$/i.test(c[0])) // ignora cabeçalho
+    .map(([bloco, predio, apto]) => ({ bloco, predio, apto }));
+  if (linhas.length === 0) return { erro: "Nenhuma linha válida. Use o formato: bloco;prédio;apartamento" };
+  const supabase = await criarClienteServidor();
+  const { data, error } = await supabase.rpc("importar_unidades", { p_linhas: linhas });
+  revalidatePath("/admin", "layout");
+  return error ? { erro: error.message } : { ok: data as ResultadoImportacao };
 }

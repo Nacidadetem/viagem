@@ -7,7 +7,7 @@ export interface Sessao {
   userId: string;
   perfil: Perfil | null;
   papeis: Papel[];
-  unidade: { bloco: string; apartamento: string } | null;
+  unidade: { bloco: string; predio: string; apartamento: string } | null;
   ehAdmin: boolean;
   ehEquipe: boolean;
 }
@@ -29,10 +29,11 @@ export const obterSessao = cache(async (): Promise<Sessao | null> => {
   if (perfil?.unidade_id) {
     const { data } = await supabase
       .from("unidades")
-      .select("numero, blocos(nome)")
+      .select("numero, predios(nome, blocos(nome))")
       .eq("id", perfil.unidade_id)
-      .maybeSingle<{ numero: string; blocos: { nome: string } | null }>();
-    if (data) unidade = { bloco: data.blocos?.nome ?? "", apartamento: data.numero };
+      .maybeSingle<{ numero: string; predios: { nome: string; blocos: { nome: string } | null } | null }>();
+    if (data)
+      unidade = { bloco: data.predios?.blocos?.nome ?? "", predio: data.predios?.nome ?? "", apartamento: data.numero };
   }
 
   const lista = (papeis ?? []).map((p) => p.papel as Papel);

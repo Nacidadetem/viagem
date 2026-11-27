@@ -3,6 +3,7 @@ import { Logo } from "@/components/logo";
 import { NavInferior } from "@/components/nav-inferior";
 import { exigirAprovado } from "@/lib/sessao";
 import Link from "next/link";
+import { endereco } from "@/lib/formatar";
 
 export const dynamic = "force-dynamic";
 
@@ -17,8 +18,8 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
           <Link href="/inicio" aria-label="Início"><Logo tamanho={40} /></Link>
           <div className="min-w-0 flex-1 leading-tight">
             <p className="truncate text-base font-bold">{p.nome.split(" ")[0]}</p>
-            <p className="text-sm text-suave">
-              {s.unidade ? `Bloco ${s.unidade.bloco} · Apto ${s.unidade.apartamento}` : "Ignez Andreazza"}
+            <p className="truncate text-sm text-suave">
+              {s.unidade ? endereco(s.unidade.bloco, s.unidade.predio, s.unidade.apartamento) : "Ignez Andreazza"}
             </p>
           </div>
         </div>
