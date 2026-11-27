@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LayoutPublico } from "@/components/layout-publico";
 import { Aviso, Botao, Campo } from "@/components/ui";
+import { CampoSenha } from "@/components/campo-senha";
 import { traduzirErro } from "@/lib/formatar";
 import { criarClienteNavegador } from "@/lib/supabase/client";
 
@@ -26,7 +27,7 @@ export default function NovaSenha() {
     <LayoutPublico titulo="Criar nova senha">
       <form onSubmit={salvar} className="flex flex-col gap-4">
         {erro ? <Aviso tipo="erro">{erro}</Aviso> : null}
-        <Campo id="senha" rotulo="Nova senha" ajuda="Pelo menos 8 caracteres." type="password"
+        <CampoSenha id="senha" rotulo="Nova senha" ajuda="Pelo menos 8 caracteres."
           autoComplete="new-password" value={senha} onChange={(e) => setSenha(e.target.value)} required />
         <Botao type="submit" carregando={carregando}>Salvar nova senha</Botao>
       </form>

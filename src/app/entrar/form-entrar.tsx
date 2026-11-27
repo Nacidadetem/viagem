@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Abas } from "@/components/abas";
 import { Aviso, Botao, Campo } from "@/components/ui";
+import { CampoSenha } from "@/components/campo-senha";
 import { mascararTelefone, telefoneParaE164, traduzirErro } from "@/lib/formatar";
 import { criarClienteNavegador } from "@/lib/supabase/client";
 
@@ -136,7 +137,7 @@ export function FormEntrar() {
         <form onSubmit={entrarEmail} className="flex flex-col gap-4">
           <Campo id="email" rotulo="E-mail" type="email" autoComplete="email" inputMode="email"
             value={email} onChange={(e) => setEmail(e.target.value)} required />
-          <Campo id="senha" rotulo="Senha" type="password" autoComplete="current-password"
+          <CampoSenha id="senha" rotulo="Senha" autoComplete="current-password"
             value={senha} onChange={(e) => setSenha(e.target.value)} required />
           <Botao type="submit" carregando={carregando}>Entrar</Botao>
           <Botao type="button" variante="texto" onClick={esqueciSenha}>Esqueci a senha</Botao>
