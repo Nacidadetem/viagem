@@ -16,6 +16,7 @@ export interface Perfil {
   email: string | null;
   telefone: string | null;
   bloco_informado: string;
+  predio_informado: string | null;
   apto_informado: string;
   unidade_id: number | null;
   tipo_vinculo: TipoVinculo;
@@ -32,9 +33,11 @@ export interface ItemFila {
   telefone: string | null;
   tipo_vinculo: TipoVinculo;
   bloco_informado: string;
+  predio_informado: string | null;
   apto_informado: string;
   unidade_id: number | null;
   bloco: string | null;
+  predio: string | null;
   apartamento: string | null;
   moradores_na_unidade: number;
   titular_existente: string | null;

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { BotaoSair } from "@/components/botao-sair";
 import { LayoutPublico } from "@/components/layout-publico";
 import { Aviso, BotaoLink, Cartao } from "@/components/ui";
-import { dataHora } from "@/lib/formatar";
+import { dataHora, endereco } from "@/lib/formatar";
 import { obterSessao } from "@/lib/sessao";
 
 export const metadata: Metadata = { title: "Cadastro em análise" };
@@ -20,8 +20,8 @@ export default async function Aguardando() {
     <LayoutPublico titulo={`Olá, ${p.nome.split(" ")[0]}!`}>
       {p.status === "pendente" ? (
         <Aviso tipo="info" titulo="⏳ Seu cadastro está em análise">
-          A administração vai conferir se você mora no <strong>bloco {p.bloco_informado}, apartamento{" "}
-          {p.apto_informado}</strong>. Isso costuma levar até 2 dias úteis. Você pode fechar o aplicativo: quando for
+          A administração vai conferir se você mora no{" "}
+          <strong>{endereco(p.bloco_informado, p.predio_informado, p.apto_informado)}</strong>. Isso costuma levar até 2 dias úteis. Você pode fechar o aplicativo: quando for
           liberado, é só entrar de novo.
         </Aviso>
       ) : null}
@@ -44,6 +44,7 @@ export default async function Aguardando() {
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-base">
           <dt className="text-suave">Nome</dt><dd>{p.nome}</dd>
           <dt className="text-suave">Bloco</dt><dd>{p.bloco_informado}</dd>
+          <dt className="text-suave">Prédio</dt><dd>{p.predio_informado ?? "—"}</dd>
           <dt className="text-suave">Apartamento</dt><dd>{p.apto_informado}</dd>
           <dt className="text-suave">Vínculo</dt><dd>{p.tipo_vinculo === "titular" ? "Titular" : "Dependente"}</dd>
           <dt className="text-suave">Enviado em</dt><dd>{dataHora(p.created_at)}</dd>

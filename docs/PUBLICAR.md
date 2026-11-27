@@ -7,7 +7,9 @@ atualização do branch `master`. Falta só o banco. São 5 passos pelo navegado
    Nome: `ignez-andreazza` · Região: **South America (São Paulo)** · crie uma senha forte e guarde-a.
 2. **Criar as tabelas** — no projeto, menu *SQL Editor* → *New query*. Abra o arquivo
    [`instalar-banco.sql`](../instalar-banco.sql), copie tudo, cole e clique em **Run**.
-   No fim deve aparecer `2464` (apartamentos criados).
+   No fim deve aparecer a estrutura configurada (23 blocos, 176 prédios, 2.464 apartamentos).
+   Os apartamentos entram quando a administração aprova cada morador, ou de uma vez em
+   *Administração → Estrutura* (importação da lista oficial: `bloco;prédio;apto`).
 3. **Endereços de login** — *Authentication* → *URL Configuration*:
    - Site URL: `https://condominioignezandreazza.vercel.app`
    - Redirect URLs: `https://condominioignezandreazza.vercel.app/auth/callback`

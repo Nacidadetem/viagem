@@ -1,7 +1,7 @@
 "use client";
 import { useState, useTransition } from "react";
 import { Aviso, Botao, Campo, Cartao, Selo } from "@/components/ui";
-import { dataHora, exibirTelefone } from "@/lib/formatar";
+import { dataHora, endereco, exibirTelefone, limparRef } from "@/lib/formatar";
 import type { ItemFila } from "@/lib/tipos";
 import { aprovar, rejeitar } from "../acoes";
 
@@ -11,9 +11,10 @@ const MOTIVOS = [
   "Cadastro duplicado.",
 ];
 
-export function CartaoAprovacao({ item }: { item: ItemFila }) {
-  const [bloco, setBloco] = useState(item.bloco ?? item.bloco_informado);
-  const [apto, setApto] = useState(item.apartamento ?? item.apto_informado);
+export function CartaoAprovacao({ item, listaOficial }: { item: ItemFila; listaOficial: boolean }) {
+  const [bloco, setBloco] = useState(item.bloco ?? limparRef(item.bloco_informado));
+  const [predio, setPredio] = useState(item.predio ?? limparRef(item.predio_informado));
+  const [apto, setApto] = useState(item.apartamento ?? limparRef(item.apto_informado));
   const [rejeitando, setRejeitando] = useState(false);
   const [motivo, setMotivo] = useState("");
   const [erro, setErro] = useState<string | null>(null);
@@ -44,7 +45,7 @@ export function CartaoAprovacao({ item }: { item: ItemFila }) {
 
       <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-base">
         <dt className="text-suave">Informou</dt>
-        <dd>Bloco <strong>{item.bloco_informado}</strong>, apto <strong>{item.apto_informado}</strong></dd>
+        <dd><strong>{endereco(item.bloco_informado, item.predio_informado ?? "?", item.apto_informado)}</strong></dd>
         {item.telefone ? (<><dt className="text-suave">Celular</dt><dd>{exibirTelefone(item.telefone)}</dd></>) : null}
         {item.email ? (<><dt className="text-suave">E-mail</dt><dd className="break-all">{item.email}</dd></>) : null}
       </dl>
@@ -56,8 +57,13 @@ export function CartaoAprovacao({ item }: { item: ItemFila }) {
             ? <>Já há <strong>{item.moradores_na_unidade}</strong> morador(es) aprovado(s) nele{item.titular_existente ? <> (titular: {item.titular_existente})</> : null}.</>
             : "Ninguém cadastrado nele ainda."}
         </p>
+      ) : listaOficial ? (
+        <Aviso tipo="atencao">Endereço fora da lista oficial. Corrija bloco, prédio e apartamento abaixo.</Aviso>
       ) : (
-        <Aviso tipo="atencao">Apartamento não encontrado. Corrija bloco e apartamento abaixo, se souber o certo.</Aviso>
+        <p className="text-sm">
+          ℹ️ A lista oficial de apartamentos ainda não foi importada. <strong>Confira o endereço</strong> antes de
+          aprovar: ao aprovar, este apartamento passa a existir no app.
+        </p>
       )}
 
       {item.status === "rejeitado" && item.motivo_status ? (
@@ -68,12 +74,13 @@ export function CartaoAprovacao({ item }: { item: ItemFila }) {
 
       {!rejeitando ? (
         <>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             <Campo id={`b-${item.id}`} rotulo="Bloco" value={bloco} onChange={(e) => setBloco(e.target.value)} />
+            <Campo id={`p-${item.id}`} rotulo="Prédio" value={predio} onChange={(e) => setPredio(e.target.value)} />
             <Campo id={`a-${item.id}`} rotulo="Apto" value={apto} onChange={(e) => setApto(e.target.value)} />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <Botao carregando={pendente} onClick={() => executar(() => aprovar(item.id, bloco, apto), `${item.nome} foi aprovado(a).`)}>
+            <Botao carregando={pendente} onClick={() => executar(() => aprovar(item.id, bloco, predio, apto), `${item.nome} foi aprovado(a).`)}>
               Aprovar
             </Botao>
             <Botao variante="secundario" onClick={() => setRejeitando(true)}>Recusar</Botao>

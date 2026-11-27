@@ -16,7 +16,11 @@ export default async function Aprovacoes({ searchParams }: { searchParams: Promi
   const { status: st } = await searchParams;
   const status: StatusCadastro = st === "rejeitado" ? "rejeitado" : "pendente";
   const supabase = await criarClienteServidor();
-  const { data, error } = await supabase.rpc("fila_aprovacao", { p_status: status });
+  const [{ data, error }, { data: cfg }] = await Promise.all([
+    supabase.rpc("fila_aprovacao", { p_status: status }),
+    supabase.from("configuracoes").select("valor").eq("chave", "lista_oficial_importada").maybeSingle(),
+  ]);
+  const listaOficial = cfg?.valor === true;
   const fila = (data ?? []) as ItemFila[];
 
   return (
@@ -37,7 +41,7 @@ export default async function Aprovacoes({ searchParams }: { searchParams: Promi
       {fila.length === 0 ? (
         <Aviso tipo="sucesso">{status === "pendente" ? "Nenhum cadastro esperando. Tudo em dia! 🎉" : "Nenhum cadastro rejeitado."}</Aviso>
       ) : (
-        <ListaAprovacoes key={status} itens={fila} />
+        <ListaAprovacoes key={status} itens={fila} listaOficial={listaOficial} />
       )}
     </div>
   );

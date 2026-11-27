@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Aviso } from "@/components/ui";
 import { criarClienteServidor } from "@/lib/supabase/server";
 import type { Papel, StatusCadastro } from "@/lib/tipos";
-import { exibirTelefone } from "@/lib/formatar";
+import { endereco, exibirTelefone } from "@/lib/formatar";
 import { CartaoUsuario } from "./cartao-usuario";
 
 export const metadata: Metadata = { title: "Usuários e permissões" };
@@ -13,14 +13,16 @@ const POR_PAGINA = 30;
 interface Linha {
   id: string; nome: string; telefone: string | null; email: string | null; status: StatusCadastro;
   tipo_vinculo: string; motivo_status: string | null;
-  unidades: { numero: string; blocos: { nome: string } | null } | null;
+  unidades: { numero: string; predios: { nome: string; blocos: { nome: string } | null } | null } | null;
+  bloco_informado: string; predio_informado: string | null; apto_informado: string;
   papeis_usuario: { papel: Papel }[];
 }
 
 export default async function Usuarios({ searchParams }: { searchParams: Promise<{ q?: string; bloco?: string; pagina?: string }> }) {
   const sp = await searchParams;
   const q = (sp.q ?? "").replace(/[%,()*]/g, " ").trim().slice(0, 60);
-  const bloco = (sp.bloco ?? "").trim().slice(0, 10);
+  // nomes são gravados sem zeros à esquerda ("05" → "5")
+  const bloco = (sp.bloco ?? "").replace(/^\s*bloco\s*/i, "").trim().replace(/^0+(?=.)/, "").slice(0, 10);
   const pagina = Math.max(1, Number(sp.pagina) || 1);
 
   const supabase = await criarClienteServidor();
@@ -28,7 +30,8 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
     .from("perfis")
     .select(
       `id, nome, telefone, email, status, tipo_vinculo, motivo_status,
-       unidades${bloco ? "!inner" : ""}(numero, blocos${bloco ? "!inner" : ""}(nome)),
+       bloco_informado, predio_informado, apto_informado,
+       unidades${bloco ? "!inner" : ""}(numero, predios${bloco ? "!inner" : ""}(nome, blocos${bloco ? "!inner" : ""}(nome))),
        papeis_usuario(papel)`,
       { count: "exact" },
     )
@@ -36,7 +39,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
     .order("nome")
     .range((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA - 1);
   if (q) consulta = consulta.ilike("nome", `%${q}%`);
-  if (bloco) consulta = consulta.eq("unidades.blocos.nome", bloco);
+  if (bloco) consulta = consulta.eq("unidades.predios.blocos.nome", bloco);
   const { data, error, count } = await consulta.returns<Linha[]>();
   const total = count ?? 0;
   const paginas = Math.max(1, Math.ceil(total / POR_PAGINA));
@@ -65,7 +68,11 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
             <CartaoUsuario
               usuario={{
                 id: u.id, nome: u.nome, contato: u.telefone ? exibirTelefone(u.telefone) : u.email ?? "", status: u.status,
-                unidade: u.unidades ? `Bloco ${u.unidades.blocos?.nome} · Apto ${u.unidades.numero}` : "Sem apartamento",
+                unidade: u.unidades
+                  ? endereco(u.unidades.predios?.blocos?.nome, u.unidades.predios?.nome, u.unidades.numero)
+                  : "Sem endereço definido",
+                temUnidade: !!u.unidades,
+                informado: { bloco: u.bloco_informado, predio: u.predio_informado ?? "", apto: u.apto_informado },
                 papeis: u.papeis_usuario.map((p) => p.papel), motivo: u.motivo_status,
               }}
             />

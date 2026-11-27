@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Abas } from "@/components/abas";
 import { Aviso, Botao, Campo } from "@/components/ui";
 import { CampoSenha } from "@/components/campo-senha";
-import { mascararTelefone, telefoneParaE164, traduzirErro } from "@/lib/formatar";
+import { limparRef, mascararTelefone, telefoneParaE164, traduzirErro } from "@/lib/formatar";
 import { criarClienteNavegador } from "@/lib/supabase/client";
 import { VERSAO_TERMOS, type TipoVinculo } from "@/lib/tipos";
 
@@ -21,7 +21,7 @@ export function FormCadastro({
   inicial,
 }: {
   modo: "novo" | "completar";
-  inicial?: { nome?: string; bloco?: string; apartamento?: string; tipo?: TipoVinculo };
+  inicial?: { nome?: string; bloco?: string; predio?: string; apartamento?: string; tipo?: TipoVinculo };
 }) {
   const router = useRouter();
   const supabase = criarClienteNavegador();
@@ -29,6 +29,7 @@ export function FormCadastro({
   const [acesso, setAcesso] = useState<Acesso>("celular");
   const [nome, setNome] = useState(inicial?.nome ?? "");
   const [bloco, setBloco] = useState(inicial?.bloco ?? "");
+  const [predio, setPredio] = useState(inicial?.predio ?? "");
   const [apto, setApto] = useState(inicial?.apartamento ?? "");
   const [tipo, setTipo] = useState<TipoVinculo>(inicial?.tipo ?? "titular");
   const [telefone, setTelefone] = useState("");
@@ -47,12 +48,13 @@ export function FormCadastro({
     e.preventDefault();
     setErro(null);
     if (nome.trim().split(/\s+/).length < 2) return setErro("Digite seu nome completo (nome e sobrenome).");
-    if (!bloco.trim() || !apto.trim()) return setErro("Informe o bloco e o apartamento.");
+    if (!bloco.trim() || !predio.trim() || !apto.trim()) return setErro("Informe o bloco, o prédio e o apartamento.");
     if (!aceiteTermos) return setErro("Para continuar, marque que leu e aceita os termos e a política de privacidade.");
 
     setCarregando(true);
-    // Confere se o bloco/apartamento existe (sem expor dados de ninguém)
-    const { data: existe } = await supabase.rpc("unidade_existe", { p_bloco: bloco, p_numero: apto });
+    // Confere se o endereço existe (sem expor dados de ninguém). Devolve null
+    // enquanto a lista oficial não foi importada: aí a administração confere.
+    const { data: existe } = await supabase.rpc("unidade_existe", { p_bloco: bloco, p_predio: predio, p_numero: apto });
     if (existe === false && !confirmaUnidade) {
       setCarregando(false);
       setUnidadeDuvidosa(true);
@@ -61,8 +63,9 @@ export function FormCadastro({
 
     const dados = {
       nome: nome.trim(),
-      bloco: bloco.trim(),
-      apartamento: apto.trim(),
+      bloco: limparRef(bloco),
+      predio: limparRef(predio),
+      apartamento: limparRef(apto),
       tipo_vinculo: tipo,
       aceite_termos: true,
       aceite_notificacoes: aceiteNotif,
@@ -74,6 +77,7 @@ export function FormCadastro({
       const { error } = await supabase.rpc("completar_cadastro", {
         p_nome: dados.nome,
         p_bloco: dados.bloco,
+        p_predio: dados.predio,
         p_apartamento: dados.apartamento,
         p_tipo: tipo,
         p_aceite_termos: true,
@@ -139,7 +143,7 @@ export function FormCadastro({
     return (
       <Aviso tipo="sucesso" titulo="Quase lá! Confirme seu e-mail.">
         Enviamos um link para <strong>{email}</strong>. Abra o e-mail e toque no link. Depois disso, a
-        administração vai conferir seu bloco e apartamento e liberar seu acesso.
+        administração vai conferir seu endereço e liberar seu acesso.
       </Aviso>
     );
 
@@ -173,14 +177,16 @@ export function FormCadastro({
         <legend className="mb-2 text-xl font-bold text-marca-900">1. Seus dados</legend>
         <Campo id="nome" rotulo="Nome completo" autoComplete="name" value={nome}
           onChange={(e) => setNome(e.target.value)} required />
-        <div className="grid grid-cols-2 gap-3">
-          <Campo id="bloco" rotulo="Bloco" placeholder="Ex.: 07" autoComplete="off" value={bloco}
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <Campo id="bloco" rotulo="Bloco" placeholder="Ex.: 5" autoComplete="off" value={bloco}
             onChange={(e) => { setBloco(e.target.value); setUnidadeDuvidosa(false); setConfirmaUnidade(false); }} required />
-          <Campo id="apto" rotulo="Apartamento" placeholder="Ex.: 203" inputMode="numeric" autoComplete="off" value={apto}
+          <Campo id="predio" rotulo="Prédio" placeholder="Ex.: 3" autoComplete="off" value={predio}
+            onChange={(e) => { setPredio(e.target.value); setUnidadeDuvidosa(false); setConfirmaUnidade(false); }} required />
+          <Campo id="apto" rotulo="Apto" placeholder="Ex.: 102" inputMode="numeric" autoComplete="off" value={apto}
             onChange={(e) => { setApto(e.target.value); setUnidadeDuvidosa(false); setConfirmaUnidade(false); }} required />
         </div>
         {unidadeDuvidosa ? (
-          <Aviso tipo="atencao" titulo="Não encontramos este bloco e apartamento.">
+          <Aviso tipo="atencao" titulo="Não encontramos este endereço na lista do condomínio.">
             <p>Confira se digitou certo. Se estiver correto, marque abaixo e envie: a administração vai verificar.</p>
             <label className="mt-3 flex items-start gap-3">
               <input type="checkbox" className="mt-1 size-6 accent-marca-700" checked={confirmaUnidade}
@@ -252,7 +258,7 @@ export function FormCadastro({
         {modo === "completar" ? "Enviar para aprovação" : acesso === "celular" ? "Continuar e receber código" : "Criar cadastro"}
       </Botao>
       <p className="text-center text-sm text-suave">
-        Depois de enviar, a administração confere seu bloco e apartamento. Você recebe um aviso quando for liberado.
+        Depois de enviar, a administração confere seu endereço. Você recebe um aviso quando for liberado.
       </p>
     </form>
   );

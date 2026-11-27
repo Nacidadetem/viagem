@@ -54,3 +54,17 @@ export function exibirTelefone(t: string | null | undefined): string {
   if (d.startsWith("55") && d.length >= 12) d = d.slice(2);
   return mascararTelefone(d);
 }
+
+/** Tira prefixos digitados pelo morador: "Prédio 3" → "3", "Bl. 05" → "05", "apto 102" → "102". */
+export function limparRef(txt: string | null | undefined): string {
+  return (txt ?? "")
+    .trim()
+    .replace(/^(bloco|bl\.?|pr[eé]dio|pr\.?|edif[ií]cio|ed\.?|apartamento|apto?\.?)\s*/i, "")
+    .trim();
+}
+
+/** "Bloco 5 · Prédio 3 · Apto 102" (partes vazias são omitidas). */
+export function endereco(bloco?: string | null, predio?: string | null, apto?: string | null): string {
+  const [b, p, a] = [bloco, predio, apto].map(limparRef);
+  return [b && `Bloco ${b}`, p && `Prédio ${p}`, a && `Apto ${a}`].filter(Boolean).join(" · ");
+}
