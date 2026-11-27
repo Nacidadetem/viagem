@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { BotaoSair } from "@/components/botao-sair";
-import { Cartao, Selo } from "@/components/ui";
+import { BotaoLink, Cartao, Selo } from "@/components/ui";
 import { obterSessao } from "@/lib/sessao";
 import { criarClienteServidor } from "@/lib/supabase/server";
 import { NOME_PAPEL } from "@/lib/tipos";
@@ -38,6 +38,9 @@ export default async function Perfil() {
           {s.papeis.map((papel) => <Selo key={papel}>{NOME_PAPEL[papel]}</Selo>)}
         </div>
         <p className="text-sm text-suave">Para mudar de apartamento, fale com a administração.</p>
+        {p.email ? (
+          <BotaoLink href="/auth/nova-senha" variante="secundario">Trocar minha senha</BotaoLink>
+        ) : null}
       </Cartao>
 
       <Preferencias

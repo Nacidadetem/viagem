@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Abas } from "@/components/abas";
 import { Aviso, Botao, Campo } from "@/components/ui";
+import { CampoSenha } from "@/components/campo-senha";
 import { mascararTelefone, telefoneParaE164, traduzirErro } from "@/lib/formatar";
 import { criarClienteNavegador } from "@/lib/supabase/client";
 import { VERSAO_TERMOS, type TipoVinculo } from "@/lib/tipos";
@@ -222,7 +223,7 @@ export function FormCadastro({
             <>
               <Campo id="email" rotulo="E-mail" type="email" autoComplete="email" inputMode="email"
                 value={email} onChange={(e) => setEmail(e.target.value)} required />
-              <Campo id="senha" rotulo="Crie uma senha" ajuda="Pelo menos 8 caracteres." type="password"
+              <CampoSenha id="senha" rotulo="Crie uma senha" ajuda="Pelo menos 8 caracteres."
                 autoComplete="new-password" value={senha} onChange={(e) => setSenha(e.target.value)} required />
             </>
           )}
